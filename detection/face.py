@@ -25,7 +25,7 @@ landmark_detector = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat"
 # cnn_detector = dlib.cnn_face_detection_model_v1('mmod_human_face_detector.dat')
 
 frame_q = Queue(2)
-bbox_q = Queue(2)
+ROIs_q = Queue(2)
 
 def run() :
     camera = cam.init().start()
@@ -61,6 +61,8 @@ def run() :
 
             forhead_ROI = utils.forhead_ROI_dynamic(xl1,yl1,xl2,yl2)
             xf,yf,wf,hf = forhead_ROI
+            forhead_boxes.append([xf,yf,wf,hf])
+
             #draw forhead
             cv2.rectangle(frame,(xf,yf),(xf+wf,yf+hf),(0,255,0),2)
             
@@ -71,8 +73,8 @@ def run() :
         # put things to queue
         if  not frame_q.full():
             frame_q.put(frame)
-        if not bbox_q.full():
-            bbox_q.put({"face":face_boxes,"forhead":forhead_boxes,"landmark":landmark_points})
+        if not ROIs_q.full():
+            ROIs_q.put({"face":face_boxes,"forhead":forhead_boxes,"landmark":landmark_points})
 
 if __name__ == "__main__":
     from threading import Thread
