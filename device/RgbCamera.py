@@ -31,12 +31,13 @@ def gstreamer_pipeline(
 class RgbCamera:
     instance_count=0
     instance =  None
-    def __init__(self,camera_source=0):
+    def __init__(self,camera_source=None):
         if self.instance_count == 0 :
             try:
-                self.cam = cv2.VideoCapture(gstreamer_pipeline(),cv2.CAP_GSTREAMER)
-                # self.cam.set(cv2.CAP_PROP_FRAME_WIDTH,320)
-                # self.cam.set(cv2.CAP_PROP_FRAME_HEIGHT,240)
+                if camera_source is not None :
+                    self.cam = cv2.VideoCapture(gstreamer_pipeline(),cv2.CAP_GSTREAMER)
+                else :
+                    self.cam = cv2.VideoCapture(camera_source)
                 # read intial frame
                 (self.success,self.frame) = self.cam.read()
                 self.q = Queue(2)
