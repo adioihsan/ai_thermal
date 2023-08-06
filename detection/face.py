@@ -1,32 +1,31 @@
 import cv2
 import dlib
+import time
 from imutils import face_utils
 from queue import Queue
 
 try:
     import detection.utils as utils
-    import device.RgbCamera as cam
-except ImportError:
+    import device.Rgb_cam as cam
+except ImportError:        # if  not frame_q.full():
+        #     frame_q.put(frame)
     import os
     import sys
     current = os.path.dirname(os.path.realpath(__file__))
     parent = os.path.dirname(current)
     sys.path.append(parent)
     import utils
-    import device.RgbCamera as cam
+    import device.Rgb_cam as cam
 
-camera = cam.RgbCamera().start()
-face_detector = dlib.get_frontal_face_detector()
-landmark_detector = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
+
 # cnn_detector = dlib.cnn_face_detection_model_v1('mmod_human_face_detector.dat')
 
-frame_q = Queue(2)
-ROIs_q = Queue(2)
-
-def run() :
+def run(frame_q,ROIs_q) :
+    face_detector = dlib.get_frontal_face_detector()
+    landmark_detector = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
     while True:
-        frame = camera.get_frame()
-        # detect face using dlib hog+svm linear
+        frame = frame_q.get(True)
+    # detect face using dlib hog+svm linear
         gray_frame = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
         face_det = face_detector(gray_frame)
 
@@ -64,39 +63,59 @@ def run() :
             # for(x,y) in landmarks:
             #     cv2.circle(frame,(x,y),2,(0,255,0),-1)
 
-                
-        # put things to queue
-        if  not frame_q.full():
-            frame_q.put(frame)
+            # put things to queue
         if not ROIs_q.full():
             ROIs_q.put({"face":face_boxes,"forhead":forhead_boxes,"landmark":landmark_points})
+
+
 if __name__ == "__main__":
-    from threading import Thread
-    mt = Thread(target=run)
-    mt.start()
+    from multiprocessing import Process , Queue , Value, sharedctypes
+
+    ROIs_q = Queue(2)
+    frame_q = Queue(2)
+
+    p = Process(target=run,args=(frame_q,ROIs_q,))
+   
+    p.start()
 
     def draw_face(frame,x,y,w,h):
          cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-    last_frame = [0,0,0,0]
-    while True:
-        frame = camera.get_frame()
-        if not ROIs_q.empty():
-            rval = ROIs_q.get(True,500)
-            face_bbox = rval.get("face")
-            if len(face_bbox) != 0:
-                for (x, y, w, h) in face_bbox:
-                    draw_face(frame,x,y,w,h)
-                    last_frame = [x,y,w,h]
-            else:        
-                print("draw last frame")
-                x,y,w,h = last_frame
-                draw_face(frame,x,y,w,h)
-                print(last_frame)
+  
+    camera = cam.RgbCamera(1).start()
 
-        cv2.imshow("face",frame)
-        key = cv2.waitKey(1)
-        if key == 27:
-            camera.stop()
-            cv2.destroyAllWindows()
-            mt.join()
-            break
+    while True:
+        success,frame = camera.get_frame()
+        if success:
+            frame_q.put(frame)
+            if not ROIs_q.empty():
+                rval = ROIs_q.get(True)
+                face_bbox = rval.get("face")
+                for (x, y, w, h) in face_bbox:
+                        draw_face(frame,x,y,w,h)
+            cv2.imshow("face",frame)
+            key = cv2.waitKey(1)
+
+            if key == 27:
+                camera.stop()
+                p.kill()
+                cv2.destroyAllWindows()
+                exit()
+    # while True:
+    #     success,pure_frame = camera.get_frame()
+    #     if success:
+    #         print(ROIs_q.get(True))
+    #         # if not ROIs_q.empty():
+    #         #     rval = ROIs_q.get(True)
+    #         #     face_bbox = rval.get("face")
+    #         #     for (x, y, w, h) in face_bbox:
+    #         #          draw_face(pure_frame,x,y,w,h)
+        
+    #         cv2.imshow("face",pure_frame)
+    #         key = cv2.waitKey(1)
+    #         if key == 27:
+    #             camera.stop()
+    #             p.kill()
+    #             cv2.destroyAllWindows()
+    #             exit()
+
+        # using calbacl
