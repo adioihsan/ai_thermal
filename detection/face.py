@@ -99,14 +99,14 @@ if __name__ == "__main__":
             cv2.imshow("face",frame)
             key = cv2.waitKey(1)
             if key == 27:
-                camera.stop()
-                p.join()
-                p.kill()
+                # camera.stop()
+                # p.join()
+                # p.kill()
                 cv2.destroyAllWindows()
                 exit()
 
     def load_frame(q_frame):
-        camera = cam.Camera(1).start()
+        camera = cam.Camera().start()
         while True:
             success,frame = camera.get_frame()
             q_frame.put(frame)

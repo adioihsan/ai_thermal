@@ -5,10 +5,10 @@ import threading
 # Global variable
 
 def gstreamer_pipeline(
-    capture_width=800,
-    capture_height=600,
-    display_width=800,
-    display_height=600,
+    capture_width=640,
+    capture_height=480,
+    display_width=640,
+    display_height=480,
     framerate=30,
     flip_method=2
 ):
@@ -108,9 +108,9 @@ if __name__ == "__main__":
 
     
 
-    def cam1():
+    def cam1(): 
         print("starting cam1")
-        camera = RgbCamera(1).start()
+        camera = Camera(1).start()
         while True :
             success,frame = camera.get_frame()
             if success:

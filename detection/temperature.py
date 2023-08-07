@@ -3,7 +3,6 @@ import numpy as np
 
 try:
     import detection.utils as utils
-    import device.FlirCamera as cam
 except ImportError:
     import os
     import sys
@@ -11,7 +10,6 @@ except ImportError:
     parent = os.path.dirname(current)
     sys.path.append(parent)
     import utils
-    import device.FlirCamera as cam
 
 
 def raw_to_8bit(data):
@@ -26,8 +24,17 @@ def get_temp(frame):
     cv2.waitKey(1)
 
 
-def run():
-    camera = cam.start(get_temp)
+def run(q_frame_flir,q_rois,q_temp):
+    while True:
+        frame = q_frame_flir.get(True)
+        rois_dict = q_rois.get(True)
+        face_bbox = rois_dict.get("face")
+        landmark_point = rois_dict.get("landmark")
+        forhead_bboxes = rois_dict.get("forhead")
+        
+
+        
+    
 
 if __name__ == "__main__":
     run()

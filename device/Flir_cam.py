@@ -83,24 +83,23 @@ def setup():
 
     return ctx, dev, devh, ctrl
 
-def start(callback):
-     ctx, dev, devh, ctrl = setup()
-    #  while True:
-    #     data = q.get(True, 500)
-    #     if data is None:
-    #         break
-    #     callback(data)
+def start():
+    ctx, dev, devh, ctrl = setup()
+    return (ctx,dev,dev,devh,ctrl)
 
 def stop(ctx,dev,devh):
     libuvc.uvc_stop_streaming(devh)
     libuvc.uvc_unref_device(dev)
     libuvc.uvc_exit(ctx)
 
-# if __name__ == "__main__":
-#     def cb(frame):
-#         print(frame)
-#     from threading import Thread
-#     Thread(target=start,args=(cb,)).start()
+if __name__ == "__main__":
+    from threading import Thread
+    Thread(target=start,args=()).start()
+    while True:
+        data = q.get(True, 500)
+        if data is None:
+            break
+        print(data)
 
 
    

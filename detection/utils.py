@@ -1,6 +1,7 @@
 import cv2
 import sys
 import os
+import numpy as np
 
 def import_from_parent():
     # getting the name of the directory
@@ -51,11 +52,15 @@ def forhead_ROI_dynamic(x1,y1,x2,y2,face_height):
 	return [ROI_x,ROI_y,ROI_w,ROI_h]
 
 #  to draw face and forhead box
-def draw_box(frame,x,y,w,h):\
+def draw_box(frame,x,y,w,h):
 	cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
 
-def draw_face(frame,face_bboxes):
+def draw_face(frame,face_bboxes,cam_name=None):
+	# if len 
 	for (x, y, w, h) in face_bboxes:
+		if cam_name == "flir":
+			x= x-50
+			y= y+10
 		cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
     
 def draw_landmark(frame,landmarks):
@@ -63,11 +68,19 @@ def draw_landmark(frame,landmarks):
 		for(x,y) in landmark:
 			cv2.circle(frame,(x,y),2,(0,255,0),-1)
 
-def draw_forhead(frame,forhead_bboxes):
+def draw_forhead(frame,forhead_bboxes,cam_name=None):
+
 	for forhead in forhead_bboxes:
 		x,y,w,h = forhead
+		if cam_name == "flir":
+			x= x-50
+			y= y+10
 		cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
+		   
+def raw_to_8bit(data):
+  cv2.normalize(data, data, 0, 65535, cv2.NORM_MINMAX)
+  np.right_shift(data, 8, data)
+  return cv2.cvtColor(np.uint8(data), cv2.COLOR_GRAY2RGB)
 
 
 # def draw_rectangle(frame,x,y,w,h):
