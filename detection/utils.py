@@ -42,12 +42,33 @@ def forhead_ROI_static(x,y,w,h):
     ROI_h = round(h/9)
     return [ROI_x,ROI_y,ROI_w,ROI_h]
 
-def forhead_ROI_dynamic(x1,y1,x2,y2):
+def forhead_ROI_dynamic(x1,y1,x2,y2,face_height):
+	#(x1,y1) is a point above left eyebrow and x2,y2 is a point above right eyebrow
+	ROI_h  = int( face_height/9 )
 	ROI_x = x1
-	ROI_y = y1-14
+	ROI_y = y1-ROI_h
 	ROI_w = x2-x1
-	ROI_h  = 14
 	return [ROI_x,ROI_y,ROI_w,ROI_h]
+
+#  to draw face and forhead box
+def draw_box(frame,x,y,w,h):\
+	cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+def draw_face(frame,face_bboxes):
+	for (x, y, w, h) in face_bboxes:
+		cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+    
+def draw_landmark(frame,landmarks):
+	for landmark in landmarks:
+		for(x,y) in landmark:
+			cv2.circle(frame,(x,y),2,(0,255,0),-1)
+
+def draw_forhead(frame,forhead_bboxes):
+	for forhead in forhead_bboxes:
+		x,y,w,h = forhead
+		cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+
 
 # def draw_rectangle(frame,x,y,w,h):
       
