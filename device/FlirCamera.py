@@ -23,13 +23,7 @@ def py_frame_callback(frame, userptr):
     )
     data = np.frombuffer(array_pointer.contents, dtype=np.dtype(np.uint16)).reshape(
         frame.contents.height, frame.contents.width
-    )  # no copy
-
-    # data = np.fromiter(
-    #   frame.contents.data, dtype=np.dtype(np.uint8), count=frame.contents.data_bytes
-    # ).reshape(
-    #   frame.contents.height, frame.contents.width, 2
-    # ) # copy
+    )  
 
     if frame.contents.data_bytes != (2 * frame.contents.width * frame.contents.height):
         return
@@ -91,11 +85,11 @@ def setup():
 
 def start(callback):
      ctx, dev, devh, ctrl = setup()
-     while True:
-        data = q.get(True, 500)
-        if data is None:
-            break
-        callback(data)
+    #  while True:
+    #     data = q.get(True, 500)
+    #     if data is None:
+    #         break
+    #     callback(data)
 
 def stop(ctx,dev,devh):
     libuvc.uvc_stop_streaming(devh)
