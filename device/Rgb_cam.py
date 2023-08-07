@@ -58,7 +58,7 @@ def gstreamer_pipeline(
 #         success,frame = 
 
 
-class RgbCamera:
+class Camera:
     def __init__(self,camera_source=None):
         try:
             if camera_source is None :
@@ -73,8 +73,10 @@ class RgbCamera:
             print(f"Cant open camera on given source {camera_source}")
 
     def start(self,callback=None):
+        print("starting rgb camera")
         self.rgbcam_thread = threading.Thread(target=self.__stream_loop,args=(callback,))
         self.rgbcam_thread.start()
+        print("rgb camera started")
         return self
     
     def get_frame(self):
