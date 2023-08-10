@@ -94,12 +94,15 @@ def stop(ctx,dev,devh):
 
 if __name__ == "__main__":
     from threading import Thread
+    import cv2
     Thread(target=start,args=()).start()
     while True:
         data = q.get(True, 500)
         if data is None:
             break
-        print(data)
+        cv2.imshow("frame flir",data)
+        cv2.waitKey(1)
+        # print(data)
 
 
    

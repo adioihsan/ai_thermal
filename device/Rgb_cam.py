@@ -89,6 +89,7 @@ class Camera:
         while self.running:
             self.success,self.frame = self.cam.read()
             if self.success and not self.q.full():
+                self.frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
                 self.q.put(self.frame)
             if callback is not None:
                 callback(self.frame)

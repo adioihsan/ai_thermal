@@ -63,9 +63,12 @@ def draw_face(frame,face_bboxes,cam_name=None):
 			y= y+10
 		cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
     
-def draw_landmark(frame,landmarks):
+def draw_landmark(frame,landmarks,cam_name=None):
 	for landmark in landmarks:
 		for(x,y) in landmark:
+			if cam_name == "flir":
+				x= x-50
+				y= y+10
 			cv2.circle(frame,(x,y),2,(0,255,0),-1)
 
 def draw_forhead(frame,forhead_bboxes,cam_name=None):
