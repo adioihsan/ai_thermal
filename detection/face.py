@@ -3,6 +3,7 @@ import dlib
 import time
 from imutils import face_utils,resize
 from queue import Queue
+from deepface import DeepFace
 
 try:
     import detection.utils as utils
