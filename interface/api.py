@@ -33,7 +33,6 @@ def gstreamer_pipeline(
 
 def load_frame(q_frame):
         cap = cv2.VideoCapture(gstreamer_pipeline(),cv2.CAP_GSTREAMER)
-
         while True:
             try:
                 grabbed,frame = cap.read()

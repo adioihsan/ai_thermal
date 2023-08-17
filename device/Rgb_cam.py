@@ -106,7 +106,6 @@ class Camera:
 if __name__ == "__main__":
     import time
     from multiprocessing import Process
-
     
 
     def cam1(): 

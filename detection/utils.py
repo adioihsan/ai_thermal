@@ -38,14 +38,14 @@ def convert_and_trim_bb(image, rect):
 
 def forhead_ROI_static(x,y,w,h):
     ROI_x = round(x + 2*(w/6))
-    ROI_y =round(y + 2*(h/9))
+    ROI_y =round(y + 2*(h/10))
     ROI_w = round(2*(w/6))
-    ROI_h = round(h/9)
+    ROI_h = round(h/10)
     return [ROI_x,ROI_y,ROI_w,ROI_h]
 
 def forhead_ROI_dynamic(x1,y1,x2,y2,face_height):
 	#(x1,y1) is a point above left eyebrow and x2,y2 is a point above right eyebrow
-	ROI_h  = int( face_height/9 )
+	ROI_h  = int( face_height/10 )
 	ROI_x = x1
 	ROI_y = y1-ROI_h
 	ROI_w = x2-x1
