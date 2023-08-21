@@ -30,33 +30,6 @@ def gstreamer_pipeline(
         )
     )
 
-# def start(camera_source=None):
-#     print("Starting rgb camera...")
-#     if camera_source is None :
-#         camera = cv2.VideoCapture(gstreamer_pipeline(),cv2.CAP_GSTREAMER)
-#     else:
-#        camera =  cv2.VideoCapture(camera_source)
-#     try:
-#         while started:
-#             success,frame = camera.read()
-#             if success:
-#                 if frame_q.not_full:
-#                     frame_q.put(frame)
-#     except Exception as error:
-#         print("Cant open RGB camera !")
-#         print(f"Error details :{error}")
-#         exit()
-#     finally:
-#         camera.release()
-
-# def stop():
-#     started = False
-
-
-# def stream_loop(camera,callback=None):
-#     while is_running:
-#         success,frame = 
-
 
 class Camera:
     def __init__(self,camera_source=None):
@@ -66,35 +39,16 @@ class Camera:
             else :
                 self.cam = cv2.VideoCapture(camera_source)
             # read intial frame
-            (self.success,self.frame) = self.cam.read()
-            self.q = Queue(2)
-            self.running = True
         except:
             print(f"Cant open camera on given source {camera_source}")
-
-    def start(self,callback=None):
-        print("starting rgb camera")
-        self.rgbcam_thread = threading.Thread(target=self.__stream_loop,args=(callback,))
-        self.rgbcam_thread.start()
-        print("rgb camera started")
-        return self
     
     def get_frame(self):
         try:
-            return [True,self.q.get(True)]
+            return self.cam.read()
         except:
-            return [False,[]]
+            print("Cant read rgb frame")
 
-    def __stream_loop(self,callback=None):
-        while self.running:
-            self.success,self.frame = self.cam.read()
-            if self.success and not self.q.full():
-                self.frame = cv2.cvtColor(self.frame, cv2.COLOR_BGR2RGB)
-                self.q.put(self.frame)
-            if callback is not None:
-                callback(self.frame)
             
-    
     def stop(self):
         print("Stoping camera streaming...")
         self.running = False
@@ -102,15 +56,13 @@ class Camera:
         self.rgbcam_thread.join()
        
 
-
 if __name__ == "__main__":
     import time
     from multiprocessing import Process
     
 
     def cam1(): 
-        print("starting cam1")
-        camera = Camera(1).start()
+        camera = Camera(1)
         while True :
             success,frame = camera.get_frame()
             if success:

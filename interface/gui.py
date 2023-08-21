@@ -12,11 +12,6 @@ import detection.utils as det_utils
 from manager.process_manager import ProcessManager
 
 
-def image_ppm(path,width=640,height=480):
-    img = Image.fromarray(path)
-    ppm = ('P6 %d %d 255 ' % (width, height)).encode('ascii') + img.tobytes()
-    return ppm
-
 def run():
     sg.theme('DarkTanBlue')
     # define globa layout setting
@@ -92,16 +87,16 @@ def run():
             
         if running:
             rgb_frame = q_frame_rgb.get(True,500)
-            if len(rgb_frame) > 0:
-                    rois_dict = q_rois.get(True,500)
-                    face_bbox = rois_dict.get("face")
-                    landmark_point = rois_dict.get("landmark")
-                    forhead_bboxes = rois_dict.get("forhead")
-                    det_utils.draw_face(rgb_frame,face_bbox)
-                    det_utils.draw_landmark(rgb_frame,landmark_point)
-                    det_utils.draw_forhead(rgb_frame,forhead_bboxes)
+            # if len(rgb_frame) > 0:
+            #         rois_dict = q_rois.get(True,500)
+            #         face_bbox = rois_dict.get("face")
+            #         landmark_point = rois_dict.get("landmark")
+            #         forhead_bboxes = rois_dict.get("forhead")
+            #         det_utils.draw_face(rgb_frame,face_bbox)
+            #         det_utils.draw_landmark(rgb_frame,landmark_point)
+            #         det_utils.draw_forhead(rgb_frame,forhead_bboxes)
             
-            imgbytes_rgb = image_ppm(rgb_frame)
+            imgbytes_rgb = cv2.imencode('.ppm',rgb_frame)[1].tobytes()  
             window['frame_rgb'].update(data=imgbytes_rgb) 
                 # print(len(rgb_frame))
 

@@ -21,7 +21,7 @@ class ProcessManager:
 
 
     def __load_rgb_frame(self):
-        rgb_cam =  Rgb_cam.Camera(1).start()
+        rgb_cam =  Rgb_cam.Camera(1)
         while True:
             success,frame = rgb_cam.get_frame()
             if not success:
@@ -38,7 +38,7 @@ class ProcessManager:
 
     def start_all_processes(self):
             self.p_frame_rgb.start()
-            self.p_face.start()
+            # self.p_face.start()
             # self.p_frame_flir()
             # self.p_temperature()
 
