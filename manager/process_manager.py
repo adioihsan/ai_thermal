@@ -8,6 +8,7 @@ from multiprocessing import Process , Queue ,active_children
 class ProcessManager:
     def __init__(self):
         self.q_frame_rgb = Queue(2)
+        self.q_frame_rgb_copy = Queue(2)
         self.q_rois = Queue(2) 
         self.q_frame_flir = Queue(2)
         self.q_temperature = Queue(2) 
@@ -16,7 +17,7 @@ class ProcessManager:
     def __factory(self):
         self.p_frame_rgb = Process(target=self.__load_rgb_frame)
         self.p_frame_flir = Process(target=self.__load_flir_frame)
-        self.p_face = Process(target=face.run,args=(self.q_frame_rgb,self.q_rois,))
+        self.p_face = Process(target=face.run,args=(self.q_frame_rgb_copy,self.q_rois,))
         self.p_temperature = Process(target=temperature.run,args=(self.q_frame_flir,self.q_rois,self.q_temperature,))
 
 
@@ -27,7 +28,9 @@ class ProcessManager:
             if not success:
                 break
             if  not self.q_frame_rgb.full():
-                self.q_frame_rgb.put(frame)    
+                self.q_frame_rgb.put(frame)
+            if not self.q_frame_rgb_copy.full():
+                self.q_frame_rgb_copy .put(frame)    
 
     def __load_flir_frame(self):
         Flir_cam.start()
@@ -38,9 +41,9 @@ class ProcessManager:
 
     def start_all_processes(self):
             self.p_frame_rgb.start()
-            # self.p_face.start()
-            # self.p_frame_flir()
-            # self.p_temperature()
+            self.p_face.start()
+            # self.p_frame_flir.start()
+            # self.p_temperature.start()
 
     def get_all_data(self):
             return [self.q_frame_rgb,self.q_frame_flir,self.q_rois,self.q_temperature]
