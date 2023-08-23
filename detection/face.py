@@ -45,8 +45,9 @@ def detect_face_dlib_cnn(frame):
     return face_boxes
 
 def detect_face_deepface_ssd(frame):
-    face_dets = DeepFace.extract_faces(frame,align=False,detector_backend="ssd",enforce_detection=False)
-    face_boxes = map(lambda detection:[i for i in detection['facial_area'].values()],face_dets)
+    detections = DeepFace.extract_faces(frame,align=False,detector_backend="ssd",enforce_detection=False)
+    det_result =filter (lambda detection:detection['confidence'] > 0.7 ,detections)
+    face_boxes = map(lambda face:list(face['facial_area'].values()) ,det_result)
     return list(face_boxes)
 
 
