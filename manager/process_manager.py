@@ -1,7 +1,7 @@
 import cv2
 import detection.utils as det_utils
 from detection import face,temperature
-from device import Rgb_cam
+from device import Rgb_cam,Flir_cam
 from multiprocessing import Process , Queue ,active_children
 
 
@@ -17,7 +17,7 @@ class ProcessManager:
 
     def __factory(self):
         self.p_frame_rgb = Process(target=self.__load_rgb_frame)
-        self.p_frame_flir = Process(target=self.__load_flir_dummy)
+        self.p_frame_flir = Process(target=self.__load_flir_frame)
         self.p_face = Process(target=face.run,args=(self.q_frame_rgb_copy,self.q_rois,))
         self.p_temperature = Process(target=temperature.run,args=(self.q_frame_flir_copy,self.q_rois,self.q_temperature,))
 

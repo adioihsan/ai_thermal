@@ -25,7 +25,7 @@ def server_rgb():
     # Define NetGear Server at Client's IP address and assign a unique port address and other parameters
     # !!! change following IP address '192.168.x.xxx' with yours !!!
     server = NetGear(
-        address="0.0.0.0",
+        address="192.168.1.32",
         port="5577",
         protocol="tcp",
         pattern=1,
@@ -62,7 +62,7 @@ def server_flir():
     # !!! change following IP address '192.168.x.xxx' with yours !!!
     options = {"flag": 0, "copy": False, "track": False, "multiserver_mode" :True}
     server = NetGear(
-        address="0.0.0.0",
+        address="192.168.1.32",
         port="5578",
         protocol="tcp",
         pattern=1,
