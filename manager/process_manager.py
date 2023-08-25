@@ -17,7 +17,7 @@ class ProcessManager:
 
     def __factory(self):
         self.p_frame_rgb = Process(target=self.__load_rgb_frame)
-        self.p_frame_flir = Process(target=self.__load_flir_frame)
+        self.p_frame_flir = Process(target=self.__load_flir_dummy)
         self.p_face = Process(target=face.run,args=(self.q_frame_rgb_copy,self.q_rois,))
         self.p_temperature = Process(target=temperature.run,args=(self.q_frame_flir_copy,self.q_rois,self.q_temperature,))
 
@@ -42,10 +42,21 @@ class ProcessManager:
             if not self.q_frame_flir_copy.full():
                 self.q_frame_flir_copy.put(frame)
 
+    def __load_flir_dummy(self):
+        rgb_cam_2 =  Rgb_cam.Camera(3)
+        while True:
+            success,frame = rgb_cam_2.get_frame()
+            if not success:
+                break
+            if  not self.q_frame_flir.full():
+                self.q_frame_flir.put(frame)
+            if not self.q_frame_flir_copy.full():
+                self.q_frame_flir_copy .put(frame)  
+
     def start_all_processes(self):
             self.p_frame_rgb.start()
-            self.p_face.start()
-            # self.p_frame_flir.start()
+            # self.p_face.start()
+            self.p_frame_flir.start()
             # self.p_temperature.start()
 
     def get_all_data(self):
