@@ -5,10 +5,10 @@ import threading
 # Global variable
 
 def gstreamer_pipeline(
-    capture_width=640,
-    capture_height=480,
-    display_width=640,
-    display_height=480,
+    capture_width=1280,
+    capture_height=720,
+    display_width=1280,
+    display_height=720,
     framerate=30,
     flip_method=2
 ):
@@ -51,9 +51,7 @@ class Camera:
             
     def stop(self):
         print("Stoping camera streaming...")
-        self.running = False
         self.cam.release()
-        self.rgbcam_thread.join()
        
 
 if __name__ == "__main__":
@@ -63,15 +61,18 @@ if __name__ == "__main__":
 
     def cam1(): 
         camera = Camera(1)
-        while True :
-            success,frame = camera.get_frame()
-            if success:
-                cv2.imshow("test frame 1",frame)
-                key = cv2.waitKey(1)
-                if key == 27:
-                    camera.stop()
-                    cv2.destroyAllWindows()
-                    break
+        try:
+            while True :
+                success,frame = camera.get_frame()
+                if success:
+                    cv2.imshow("test frame 1",frame)
+                    key = cv2.waitKey(1)
+                    if key == 27:
+                        camera.stop()
+                        cv2.destroyAllWindows()
+                        break
+        except KeyboardInterrupt:
+            camera.stop()
 
     Process(target=cam1).start()
         

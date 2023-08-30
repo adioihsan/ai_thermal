@@ -36,6 +36,24 @@ def convert_and_trim_bb(image, rect):
 	# return our bounding box coordinates
 	return (startX, startY, w, h)
 
+def get_ssd_bbox(frame,detections):
+		# loop over the detections
+	h, w = frame.shape[:2]
+	scores = detections[:,2]
+
+	boxes = []
+
+	for (_, _, score, x1, y1, x2, y2) in detections[scores > 0.5]:
+		
+		# scale box
+		box = np.array([x1, y1, x2, y2]) * np.array([w, h, w, h])
+		
+		# cast to int
+		(x1, y1, x2, y2) = box.astype("int")
+		boxes.append([x1,y1,x2-x1,y2-y1])
+	return boxes
+		
+
 def forhead_ROI_static(x,y,w,h):
     ROI_x = round(x + 2*(w/6))
     ROI_y =round(y + 2*(h/10))
@@ -84,6 +102,42 @@ def raw_to_8bit(data):
   cv2.normalize(data, data, 0, 65535, cv2.NORM_MINMAX)
   np.right_shift(data, 8, data)
   return cv2.cvtColor(np.uint8(data), cv2.COLOR_GRAY2RGB)
+
+def conv_169(frame):
+
+	target_aspect_ratio = 4 / 3
+		# Get the dimensions of the input image
+	height, width = frame.shape[:2]
+
+	# Calculate the new width based on the target aspect ratio
+	new_width = int(height * target_aspect_ratio)
+
+	# Resize the image while maintaining the aspect ratio
+	resized_image = cv2.resize(frame, (new_width, height))
+
+	# Calculate the width padding needed for 4:3 aspect ratio
+	padding = (new_width - width) // 2
+
+	# Crop the resized image to get the final 4:3 aspect ratio
+	final_frame = resized_image[:, padding:padding+width]
+
+	# Save the final image
+	return final_frame
+
+def draw_temp(frame,face_bboxes,text,cam_name):
+	for (x, y, w, h) in face_bboxes:
+		if cam_name == "flir":
+			x= x-50
+			y= y+10
+		cv2.putText(  
+			img = frame,
+			text = text,
+			org = (x,y),
+			fontFace = cv2.FONT_HERSHEY_DUPLEX,
+			fontScale = 1,
+			color = (125, 246, 55),
+			thickness = 1)
+
 
 
 # def draw_rectangle(frame,x,y,w,h):

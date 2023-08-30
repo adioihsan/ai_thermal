@@ -4,10 +4,7 @@ current = os.path.dirname(os.path.realpath(__file__))
 parent = os.path.dirname(current)
 sys.path.append(parent)
 import cv2
-import numpy as np
-from PIL import Image
 import PySimpleGUI as sg
-import psutil
 import detection.utils as det_utils
 from manager.process_manager import ProcessManager
 
@@ -92,29 +89,28 @@ def run():
                     face_bbox = rois_dict.get("face")
                     landmark_point = rois_dict.get("landmark")
                     forhead_bboxes = rois_dict.get("forhead")
-                    det_utils.draw_face(rgb_frame,face_bbox)
-                    det_utils.draw_landmark(rgb_frame,landmark_point)
-                    det_utils.draw_forhead(rgb_frame,forhead_bboxes)
+                    # det_utils.draw_face(rgb_frame,face_bbox)
+                    # det_utils.draw_landmark(rgb_frame,landmark_point)
+                    # det_utils.draw_forhead(rgb_frame,forhead_bboxes)
             
-            imgbytes_rgb = cv2.imencode('.ppm',rgb_frame)[1].tobytes()  
-            window['frame_rgb'].update(data=imgbytes_rgb) 
+                    imgbytes_rgb = cv2.imencode('.ppm',rgb_frame)[1].tobytes()  
+                    window['frame_rgb'].update(data=imgbytes_rgb) 
                 # print(len(rgb_frame))
 
-            # flir_frame = cv2.resize(flir_frame[:,:], (640, 480))
-            # flir_8_bit_frame = det_utils.raw_to_8bit(flir_frame)
+            # flir_frame = q_frame_flir.get(True,500)
+            # if len(flir_frame) > 0 :
+            #     flir_frame = cv2.resize(flir_frame[:,:], (640, 480))
+            #     flir_8_bit_frame = det_utils.raw_to_8bit(flir_frame)
 
-            # det_utils.draw_face(flir_8_bit_frame,face_bbox,"flir")
-            # det_utils.draw_landmark(flir_8_bit_frame,landmark_point,"flir")
-            # det_utils.draw_forhead(flir_8_bit_frame,forhead_bboxes,"flir")
+            #     # det_utils.draw_face(flir_8_bit_frame,face_bbox,"flir")
+            #     # det_utils.draw_landmark(flir_8_bit_frame,landmark_point,"flir")
+            #     # det_utils.draw_forhead(flir_8_bit_frame,forhead_bboxes,"flir")
 
-            # imgbytes_flir =  image_ppm(flir_8_bit_frame)
-            # window['frame_flir'].update(data=imgbytes_flir)
+            #     imgbytes_flir = cv2.imencode('.ppm',flir_8_bit_frame)[1].tobytes()  
+            #     window['frame_flir'].update(data=imgbytes_flir)
 
-            # temp_dict = q_temp.get(True)
-            # face_temp = temp_dict.get("face")
-
-            # if len(face_temp) != 0:
-            #     window['face_highest'].update(face_temp[0])
-
+                # temp_dict = q_temp.get(True)
+                
+     
 if __name__ == "__main__":
     run()

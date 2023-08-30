@@ -2,9 +2,8 @@ import cv2
 import time
 import configparser
 import dlib
-from deepface import DeepFace
-from imutils import face_utils,resize
-from queue import Queue
+from imutils import face_utils
+import numpy as np
 
 try:
     import detection.utils as utils
@@ -26,10 +25,12 @@ FACE_DETECTOR = config_d["detector"]
 SHOW_LANDMARK = config_d.getboolean("landmark")
 print(SHOW_LANDMARK)
 
+net = cv2.dnn.readNetFromCaffe("caffe/deploy.prototxt.txt", "caffe/res10_300x300_ssd_iter_140000.caffemodel")
+net.setPreferableBackend(cv2.dnn.DNN_BACKEND_CUDA)
+net.setPreferableTarget(cv2.dnn.DNN_TARGET_CUDA)
+
 if FACE_DETECTOR == "dlib_hog":
     face_detector = dlib.get_frontal_face_detector()
-elif FACE_DETECTOR == "dlib_cnn":
-    face_detector = dlib.cnn_face_detection_model_v1('mmod_human_face_detector.dat')
 
 def detect_face_dlib_hog(frame):
     gray_frame = cv2.cvtColor(frame,cv2.COLOR_BGR2GRAY)
@@ -37,19 +38,20 @@ def detect_face_dlib_hog(frame):
     face_boxes = [utils.convert_and_trim_bb(gray_frame, r) for r in face_det]
     return face_boxes
 
-def detect_face_dlib_cnn(frame):
-    rgb_frame = cv2.cvtColor(frame,cv2.COLOR_BGR2RGB)
-    rgb_frame = resize(frame, width=600)
-    face_det = face_detector(rgb_frame)
-    face_boxes = [utils.convert_and_trim_bb(frame, r.rect) for r in face_det]
+def detect_face_resnet_ssd(frame):
+    blob = cv2.dnn.blobFromImage(
+    cv2.resize(frame, (300, 300)),
+    1.0,
+    (300, 300),
+    (104.0, 177.0, 123.0)
+    )
+    net.setInput(blob)
+    detections = net.forward()
+
+    # overlay
+    detections = np.squeeze(detections)
+    face_boxes = utils.get_ssd_bbox(frame,detections)
     return face_boxes
-
-def detect_face_deepface_ssd(frame):
-    detections = DeepFace.extract_faces(frame,align=False,detector_backend="ssd",enforce_detection=False)
-    det_result =filter (lambda detection:detection['confidence'] > 0.7 ,detections)
-    face_boxes = map(lambda face:list(face['facial_area'].values()) ,det_result)
-    return list(face_boxes)
-
 
 #detect face landmarks containt 68 points in x,y cordinate
 landmark_detector = dlib.shape_predictor("shape_predictor_68_face_landmarks.dat")
@@ -73,14 +75,13 @@ def detect_forhead(frame,face_box,landmark=None):
     return forhead_ROI
 
 FACE_DETECTOR_DICT = {
-    "dlib_cnn": detect_face_dlib_cnn,
     "dlib_hog": detect_face_dlib_hog,
-    "deepface_ssd": detect_face_deepface_ssd
+    "resnet_ssd": detect_face_resnet_ssd,
 }
 
-def run(q_frame,q_rois) :
+def run(q_frame,q_rois):
     while True:
-        frame = q_frame.get(True)
+        frame = q_frame.get(True,500)
         face_boxes = FACE_DETECTOR_DICT[FACE_DETECTOR](frame)
         # initiate array
         forhead_boxes = []
@@ -96,51 +97,32 @@ def run(q_frame,q_rois) :
                 forhead = detect_forhead(frame,[x,y,w,h])
                 forhead_boxes.append(forhead)
 
-        # put detections result into queue
         if not q_rois.full():
-            q_rois.put({"face":face_boxes,"forhead":forhead_boxes,"landmark":landmark_points})
+            q_rois.put({"face":face_boxes,"forhead":forhead_boxes,"landmark":landmark_points},500)
             
 if __name__ == "__main__":
-    from multiprocessing import Process , Queue
-    from threading import Thread
+    from device import Rgb_cam
+    rgb_cam =  Rgb_cam.Camera()
+    while True:
+        success,frame = rgb_cam.get_frame()
+        if not success:
+            break
 
-    def show_cam(q_frame,q_rois):
-        while True:
-            frame = q_frame.get(True) 
-            if not q_rois.empty():
-                rval = q_rois.get(True)
-                # face_bbox = rval.get("face")
-                # landmark_point = rval.get("landmark")
-                forhead_bboxes = rval.get("forhead")
-                # utils.draw_face(frame,face_bbox)
-                # utils.draw_landmark(frame,landmark_point)
-                utils.draw_forhead(frame,forhead_bboxes)
-            cv2.imshow("face",frame)
-            key = cv2.waitKey(1)
-            if key == 27:
-                # camera.stop()
-                # p.join()
-                # p.kill()
-                cv2.destroyAllWindows()
-                exit()
+        frame = frame[0:960,0:720]
+        cv2.resize(frame,(640,480))
+        face,forhead,landmark = run(frame).values()
 
-    def load_frame(q_frame):
-        camera = cam.Camera(1).start()
-        while True:
-            success,frame = camera.get_frame()
-            q_frame.put(frame)
+        utils.draw_face(frame,face)
 
-    q_rois = Queue(2)
-    q_frame = Queue(2)
+        print(face)
+
+        cv2.imshow("face",frame)
+        key = cv2.waitKey(1)
+
+        if key == "q":
+            rgb_cam.stop()
+            break
     
-    p_frame = Process(target=load_frame,args=(q_frame,))
-    p_cam = Process(target=show_cam,args=(q_frame,q_rois))
-    p_face = Process(target=run,args=(q_frame,q_rois,))
 
-    p_frame.start()
-    p_cam.start()
-    p_face.start()
-    # p_face.start()
-   
-    # p_proc.start()
+        
          

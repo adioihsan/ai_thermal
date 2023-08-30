@@ -23,15 +23,16 @@ class ProcessManager:
 
 
     def __load_rgb_frame(self):
-        rgb_cam =  Rgb_cam.Camera(1)
+        rgb_cam =  Rgb_cam.Camera()
         while True:
             success,frame = rgb_cam.get_frame()
+            frame = cv2.resize(frame,(640,480))
             if not success:
                 break
             if  not self.q_frame_rgb.full():
                 self.q_frame_rgb.put(frame)
             if not self.q_frame_rgb_copy.full():
-                self.q_frame_rgb_copy .put(frame)    
+                self.q_frame_rgb_copy.put(frame)    
 
     def __load_flir_frame(self):
         Flir_cam.start()
@@ -42,22 +43,11 @@ class ProcessManager:
             if not self.q_frame_flir_copy.full():
                 self.q_frame_flir_copy.put(frame)
 
-    def __load_flir_dummy(self):
-        rgb_cam_2 =  Rgb_cam.Camera(3)
-        while True:
-            success,frame = rgb_cam_2.get_frame()
-            if not success:
-                break
-            if  not self.q_frame_flir.full():
-                self.q_frame_flir.put(frame)
-            if not self.q_frame_flir_copy.full():
-                self.q_frame_flir_copy .put(frame)  
-
     def start_all_processes(self):
             self.p_frame_rgb.start()
-            # self.p_face.start()
+            self.p_face.start()
             self.p_frame_flir.start()
-            # self.p_temperature.start()
+            self.p_temperature.start()
 
     def get_all_data(self):
             return [self.q_frame_rgb,self.q_frame_flir,self.q_rois,self.q_temperature]

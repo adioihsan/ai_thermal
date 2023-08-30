@@ -12,7 +12,7 @@ except ImportError:
     import utils
 
 
-def get_temp(val_k,unit="C"):
+def temp_to_c(val_k,unit="C"):
     val=val_k
     if unit == "C":
         val = (val - 27315) / 100.0
@@ -24,6 +24,17 @@ def get_temp(val_k,unit="C"):
         val = val_k
     return val
 
+def get_temp(frame,bbox):
+    for (x,y,w,h) in bbox:
+        area = frame[y:y+h,x:x+w].copy()
+        minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(area)
+
+        temp_max = temp_to_c(maxVal)
+        temp_avg = temp_to_c((maxVal+minVal)/2)
+        temp_min = temp_to_c(minVal)
+
+        return [temp_max,temp_avg,temp_min]
+
 
 def run(q_frame_flir,q_rois,q_temp):
     while True:
@@ -32,21 +43,13 @@ def run(q_frame_flir,q_rois,q_temp):
         
         rois_dict = q_rois.get(True)
         face_bbox = rois_dict.get("face")
+        forhead_bbox = rois_dict.get("forhead")
 
-        face_temps = []
+        face_temps = get_temp(frame,face_bbox)
+        forhead_temps =  get_temp(frame,forhead_bbox)
 
-        # landmark_point = rois_dict.get("landmark")
-        forhead_bboxes = rois_dict.get("forhead")
-        for (x,y,w,h) in face_bbox:
-            face_area = frame[y:y+h,x:x+w].copy()
-            minVal, maxVal, minLoc, maxLoc = cv2.minMaxLoc(face_area)
-            face_temp_max = get_temp(maxVal)
-            face_temp_avg = 0
-            face_temps.append(face_temp_max)
-            face_temps.append(face_temp_avg)
-        
         if not q_temp.full():
-            q_temp.put({"face":face_temps})
+            q_temp.put({"face":face_temps,"forhead":forhead_temps})
 
 if __name__ == "__main__":
     run()

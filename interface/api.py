@@ -45,14 +45,27 @@ def server_rgb():
             # let's prepare a text string as data
             target_data = "I'm Server-1 at Port: 5577"
 
+            rois_dict = q_rois.get(True,500)
+            face_bbox = rois_dict.get("face")
+            landmark_point = rois_dict.get("landmark")
+            forhead_bboxes = rois_dict.get("forhead")
+
+
+            det_utils.draw_face(frame,face_bbox)
+            det_utils.draw_landmark(frame,landmark_point)
+            det_utils.draw_forhead(frame,forhead_bboxes)
+
             # send frame and data through server
-            server.send(frame, message=target_data) # 
+            frame = cv2.resize(frame,(160,120))
+            server.send(frame, message=target_data)
+
+
+            
 
         except KeyboardInterrupt:
             break
 
     # safely close video stream
-    stream.stop()
 
     # safely close server
     server.close()
@@ -84,10 +97,12 @@ def server_flir():
             # {do something with frame and data(to be sent) here}
 
             # let's prepare a text string as data
+            
             text = "I'm Server-2 at Port: 5578"
-
+            
+            flir_8_bit_frame = det_utils.raw_to_8bit(frame)
             # send frame and data through server
-            server.send(frame, message=text)
+            server.send(flir_8_bit_frame, message=text)
 
         except KeyboardInterrupt:
             break
